@@ -2,11 +2,11 @@
 // Copyright:       Copyright (C) 2022 Kirk.O
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Author:          Kirk.O
-// Version:			v.1.00
+// Version:			v.1.02
 // Created On: 	    3/20/2022, 12:00 PM
-// Last Edit:		3/20/2022, 12:00 PM
+// Last Edit:		3/21/2022, 9:10 PM
 // Modifier:
-// Special Thanks:  Alphaus, Kab the Bird Ranger, Hazelnut
+// Special Thanks:  Alphaus, Kab the Bird Ranger, Hazelnut, BadLuckBurt, Sordid, Thevm
 
 using UnityEngine;
 using System;
@@ -117,58 +117,108 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             List<TextFile.Token> tokens = new List<TextFile.Token>();
             TextFile.Formatting formatting = highlight ? TextFile.Formatting.TextHighlight : TextFile.Formatting.Text;
 
-            TextFile.Token skillNameToken = new TextFile.Token();
-            skillNameToken.formatting = formatting;
-            skillNameToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(skill);
-
-            TextFile.Token skillTallyTrackerToken = new TextFile.Token();
-            skillTallyTrackerToken.formatting = formatting;
-            skillTallyTrackerToken.text = string.Format("{0} / {1}", currentTallyCount, tallysNeededForAdvance);
-
-            TextFile.Token skillValueToken = new TextFile.Token();
-            skillValueToken.formatting = formatting;
-            skillValueToken.text = string.Format("{0}%", playerEntity.Skills.GetLiveSkillValue(skill));
-
-            DFCareer.Stats primaryStat = DaggerfallSkills.GetPrimaryStat(skill);
-            TextFile.Token skillPrimaryStatToken = new TextFile.Token();
-            skillPrimaryStatToken.formatting = formatting;
-            skillPrimaryStatToken.text = DaggerfallUnity.Instance.TextProvider.GetAbbreviatedStatName(primaryStat);
-
-            TextFile.Token positioningToken = new TextFile.Token();
-            positioningToken.formatting = TextFile.Formatting.PositionPrefix;
-
-            TextFile.Token tabToken = new TextFile.Token();
-            tabToken.formatting = TextFile.Formatting.PositionPrefix;
-
-            // Add tokens in order
-            if (!twoColumn)
+            if (DaggerfallUnity.Settings.SDFFontRendering) // For when SDF Font Rendering is enabled (I.E. The smoother text for higher resolutions.)
             {
-                tokens.Add(skillNameToken);
-                tokens.Add(tabToken);
-                tokens.Add(tabToken);
-                tokens.Add(skillTallyTrackerToken);
-                tokens.Add(tabToken);
-                tokens.Add(skillValueToken);
-                tokens.Add(tabToken);
-                tokens.Add(skillPrimaryStatToken);
-            }
-            else // miscellaneous skills
-            {
-                if (startPosition != 0) // if this is the second column
+                TextFile.Token skillNameToken = new TextFile.Token();
+                skillNameToken.formatting = formatting;
+                skillNameToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(skill);
+
+                TextFile.Token skillTallyTrackerToken = new TextFile.Token();
+                skillTallyTrackerToken.formatting = formatting;
+                if (playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 100)
+                    skillTallyTrackerToken.text = "MASTERED";
+                else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 95)
+                    skillTallyTrackerToken.text = "Maxed";
+                else
+                    skillTallyTrackerToken.text = string.Format("{0} / {1}", currentTallyCount, tallysNeededForAdvance);
+
+                TextFile.Token skillValueToken = new TextFile.Token();
+                skillValueToken.formatting = formatting;
+                skillValueToken.text = string.Format("{0}%", playerEntity.Skills.GetLiveSkillValue(skill));
+
+                DFCareer.Stats primaryStat = DaggerfallSkills.GetPrimaryStat(skill);
+                TextFile.Token skillPrimaryStatToken = new TextFile.Token();
+                skillPrimaryStatToken.formatting = formatting;
+                skillPrimaryStatToken.text = DaggerfallUnity.Instance.TextProvider.GetAbbreviatedStatName(primaryStat);
+
+                TextFile.Token positioningToken = new TextFile.Token();
+                positioningToken.formatting = TextFile.Formatting.PositionPrefix;
+
+                TextFile.Token tabToken = new TextFile.Token();
+                tabToken.formatting = TextFile.Formatting.PositionPrefix;
+
+                // Add tokens in order
+                if (!twoColumn)
                 {
-                    positioningToken.x = startPosition;
-                    tokens.Add(positioningToken);
+                    tokens.Add(skillNameToken);
+                    tokens.Add(tabToken);
+                    tokens.Add(tabToken);
+                    tokens.Add(skillTallyTrackerToken);
                 }
-                tokens.Add(skillNameToken);
-                positioningToken.x = startPosition + 55;
-                tokens.Add(positioningToken);
-                tokens.Add(skillTallyTrackerToken);
-                positioningToken.x = startPosition + 95; // + 85 Default
-                tokens.Add(positioningToken);
-                tokens.Add(skillValueToken);
-                positioningToken.x = startPosition + 112;
-                tokens.Add(positioningToken);
-                tokens.Add(skillPrimaryStatToken);
+                else // miscellaneous skills
+                {
+                    if (startPosition != 0) // if this is the second column
+                    {
+                        positioningToken.x = startPosition;
+                        tokens.Add(positioningToken);
+                    }
+                    tokens.Add(skillNameToken);
+                    positioningToken.x = startPosition + 55;
+                    tokens.Add(positioningToken);
+                    tokens.Add(skillTallyTrackerToken);
+                }
+            }
+            else // For when the original Daggerfall font is being used (I.E. the less smooth looking "retro" font.)
+            {
+                TextFile.Token skillNameToken = new TextFile.Token();
+                skillNameToken.formatting = formatting;
+                skillNameToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(skill);
+
+                TextFile.Token skillTallyTrackerToken = new TextFile.Token();
+                skillTallyTrackerToken.formatting = formatting;
+                if (playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 100)
+                    skillTallyTrackerToken.text = "MASTERED";
+                else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 95)
+                    skillTallyTrackerToken.text = "Maxed";
+                else
+                    skillTallyTrackerToken.text = string.Format("{0} / {1}", currentTallyCount, tallysNeededForAdvance);
+
+                TextFile.Token skillValueToken = new TextFile.Token();
+                skillValueToken.formatting = formatting;
+                skillValueToken.text = string.Format("{0}%", playerEntity.Skills.GetLiveSkillValue(skill));
+
+                DFCareer.Stats primaryStat = DaggerfallSkills.GetPrimaryStat(skill);
+                TextFile.Token skillPrimaryStatToken = new TextFile.Token();
+                skillPrimaryStatToken.formatting = formatting;
+                skillPrimaryStatToken.text = DaggerfallUnity.Instance.TextProvider.GetAbbreviatedStatName(primaryStat);
+
+                TextFile.Token positioningToken = new TextFile.Token();
+                positioningToken.formatting = TextFile.Formatting.PositionPrefix;
+
+                TextFile.Token tabToken = new TextFile.Token();
+                tabToken.formatting = TextFile.Formatting.PositionPrefix;
+
+                // Add tokens in order
+                if (!twoColumn)
+                {
+                    tokens.Add(skillNameToken);
+                    tokens.Add(tabToken);
+                    tokens.Add(tabToken);
+                    tokens.Add(tabToken);
+                    tokens.Add(skillTallyTrackerToken);
+                }
+                else // miscellaneous skills
+                {
+                    if (startPosition != 0) // if this is the second column
+                    {
+                        positioningToken.x = startPosition;
+                        tokens.Add(positioningToken);
+                    }
+                    tokens.Add(skillNameToken);
+                    positioningToken.x = startPosition + 90;
+                    tokens.Add(positioningToken);
+                    tokens.Add(skillTallyTrackerToken);
+                }
             }
 
             return tokens.ToArray();
@@ -179,6 +229,10 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             bool secondColumn = false;
             bool showHandToHandDamage = false;
             List<TextFile.Token> tokens = new List<TextFile.Token>();
+            int secondColumnStartPos = 120;
+            if (!DaggerfallUnity.Settings.SDFFontRendering) // For when the original Daggerfall font is being used (I.E. the less smooth looking "retro" font.)
+                secondColumnStartPos = 180;
+
             for (int i = 0; i < skills.Count; i++)
             {
                 if (!showHandToHandDamage && (skills[i] == DFCareer.Skills.HandToHand))
@@ -199,7 +253,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     }
                     else
                     {
-                        tokens.AddRange(CreateSkillTokens(skills[i], true, 136));
+                        tokens.AddRange(CreateSkillTokens(skills[i], true, secondColumnStartPos));
                         secondColumn = !secondColumn;
                         if (i < skills.Count - 1)
                             tokens.Add(TextFile.NewLineToken);
