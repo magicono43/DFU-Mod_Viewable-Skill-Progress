@@ -1,0 +1,184 @@
+{
+    "Version": "1.00",
+    "Sections": [
+	{
+            "Name": "GeneralSettings",
+            "Description": "Related To General Mod Settings",
+            "IsAdvanced": false,
+            "Keys": [
+				{
+                    "Options": [
+                        "Bar + Text",
+                        "Text Only",
+						"Bar Only"
+                    ],
+                    "Value": 0,
+                    "Name": "DisplayType",
+                    "Description": "In What Form Progress Will Be Displayed",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.MultipleChoiceKey"
+                },
+				{
+                    "Value": false,
+                    "Name": "ShowGovAttributeText",
+                    "Description": "If Governing Attribute Text Should Be Displayed || Default = False",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ToggleKey"
+                }
+            ],
+            "$version": "v1"
+        },
+		{
+            "Name": "TextSettings",
+            "Description": "Related To Text Settings And Options",
+            "IsAdvanced": false,
+            "Keys": [
+                {
+                    "Options": [
+                        "Current XP / Required XP",
+                        "Needed XP Remaining",
+						"Numbers Only (For Nerds)"
+                    ],
+                    "Value": 0,
+                    "Name": "TextDisplayType",
+                    "Description": "In What Form Progress Text Will Be Displayed",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.MultipleChoiceKey"
+                },
+				{
+                    "Options": [
+                        "None",
+                        "<>",
+						"[]",
+						"()",
+						"++",
+						"**",
+						"=="
+                    ],
+                    "Value": 0,
+                    "Name": "TextBrackets",
+                    "Description": "If Progress Text Should Be Surrounded By Brackets, And If So What Kind",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.MultipleChoiceKey"
+                },
+				{
+                    "Min": 0.3,
+                    "Max": 1.0,
+                    "Value": 0.7,
+                    "Name": "TextScale",
+                    "Description": "What Scale/Size Progress Text Will Be",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.SliderFloatKey"
+                },
+				{
+                    "Value": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 255
+                    },
+                    "Name": "TextColor",
+                    "Description": "Main Color Used For Progress Text",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ColorKey"
+                }
+            ],
+            "$version": "v1"
+        },
+		{
+            "Name": "ProgressBarSettings",
+            "Description": "Related To Progress Bar Graphic Settings And Options",
+            "IsAdvanced": false,
+            "Keys": [
+				{
+                    "Min": 0,
+                    "Max": 100,
+                    "Value": 60,
+                    "Name": "BarPositionX",
+                    "Description": "Changes X Position Of Progress Bars",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.SliderIntKey"
+                },
+				{
+                    "Min": 0,
+                    "Max": 30,
+                    "Value": 10,
+                    "Name": "BarPositionY",
+                    "Description": "Changes Y Position Of Progress Bars",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.SliderIntKey"
+                },
+				{
+                    "Min": 10,
+                    "Max": 50,
+                    "Value": 50,
+                    "Name": "ProgBarWidth",
+                    "Description": "Changes Width Of The Progress Bars",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.SliderIntKey"
+                },
+				{
+                    "Value": {
+                        "r": 255,
+                        "g": 235,
+                        "b": 4,
+                        "a": 255
+                    },
+                    "Name": "ProgBarOutlineColor",
+                    "Description": "Main Color Used For The Outline Of The Progress Bar",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ColorKey"
+                },
+                {
+                    "Value": {
+                        "r": 140,
+                        "g": 0,
+                        "b": 0,
+                        "a": 255
+                    },
+                    "Name": "ProgBarColor",
+                    "Description": "Main Color Used For The Progress Bar",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ColorKey"
+                },
+				{
+                    "Value": {
+                        "r": 0,
+                        "g": 140,
+                        "b": 0,
+                        "a": 255
+                    },
+                    "Name": "ReadyToLevelColor",
+                    "Description": "Color Used For The Progress Bar When Skill Is Ready To Level",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ColorKey"
+                },
+				{
+                    "Value": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 255
+                    },
+                    "Name": "MasteredColor",
+                    "Description": "Color Used For The Progress Bar When A Skill Reaches Level 100+",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ColorKey"
+                },
+				{
+                    "Value": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 140,
+                        "a": 255
+                    },
+                    "Name": "MaxedColor",
+                    "Description": "Color Used For The Progress Bar When A Skill Has Reached Its Maximum Possible Value Due To Another Being Mastered Already",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ColorKey"
+                }
+            ],
+            "$version": "v1"
+        }
+    ]
+}

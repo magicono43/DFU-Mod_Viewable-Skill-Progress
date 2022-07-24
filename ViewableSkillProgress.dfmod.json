@@ -1,13 +1,14 @@
 {
     "ModTitle": "ViewableSkillProgress",
-    "ModVersion": "1.02",
+    "ModVersion": "1.20",
     "ModAuthor": "Kirk.O",
     "ContactInfo": "kirkoliveri@gmail.com",
-    "DFUnity_Version": "0.13.4",
+    "DFUnity_Version": "0.14.1",
     "ModDescription": "Shows Skill Progress To Next Level On Character Sheet Window.",
     "GUID": "1b8546dd-9b84-4deb-a32d-83fc4bf043d0",
     "Files": [
         "Assets/Game/Mods/DFU-Mod_Viewable-Skill-Progress/Scripts/ViewableSkillProgressMain.cs",
-        "Assets/Game/Mods/DFU-Mod_Viewable-Skill-Progress/Scripts/VSPCharacterSheetOverride.cs"
+        "Assets/Game/Mods/DFU-Mod_Viewable-Skill-Progress/Scripts/VSPCharacterSheetOverride.cs",
+        "Assets/Game/Mods/DFU-Mod_Viewable-Skill-Progress/modsettings.json"
     ]
 }

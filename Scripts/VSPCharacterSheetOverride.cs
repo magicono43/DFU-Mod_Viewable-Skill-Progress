@@ -1,13 +1,3 @@
-// Project:         ViewableSkillProgress mod for Daggerfall Unity (http://www.dfworkshop.net)
-// Copyright:       Copyright (C) 2022 Kirk.O
-// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
-// Author:          Kirk.O
-// Version:			v.1.02
-// Created On: 	    3/20/2022, 12:00 PM
-// Last Edit:		3/21/2022, 9:10 PM
-// Modifier:
-// Special Thanks:  Alphaus, Kab the Bird Ranger, Hazelnut, BadLuckBurt, Sordid, Thevm
-
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -16,17 +6,15 @@ using DaggerfallConnect.Arena2;
 using DaggerfallWorkshop.Game.UserInterface;
 using DaggerfallWorkshop.Game.Entity;
 using DaggerfallWorkshop.Game.Formulas;
+using ViewableSkillProgress;
 
 namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 {
     public class VSPCharacterSheetOverride : DaggerfallCharacterSheetWindow
     {
-        PlayerEntity playerEntity;
+        PlayerEntity playerEntity = GameManager.Instance.PlayerEntity;
 
-        PlayerEntity PlayerEntity
-        {
-            get { return (playerEntity != null) ? playerEntity : playerEntity = GameManager.Instance.PlayerEntity; }
-        }
+        public static Outline outline;
 
         #region Constructors
 
@@ -36,55 +24,6 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         }
 
         #endregion
-
-        protected override void Setup()
-        {
-            base.Setup();
-            SetupSkillProgressText();
-        }
-
-        protected void SetupSkillProgressText()
-        {
-            // Primary skills button
-            Button primarySkillsButton = DaggerfallUI.AddButton(new Rect(11, 106, 115, 8), NativePanel);
-            primarySkillsButton.OnMouseClick += PrimarySkillsButton_OnMouseClick;
-            primarySkillsButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.CharacterSheetPrimarySkills);
-
-            // Major skills button
-            Button majorSkillsButton = DaggerfallUI.AddButton(new Rect(11, 116, 115, 8), NativePanel);
-            majorSkillsButton.OnMouseClick += MajorSkillsButton_OnMouseClick;
-            majorSkillsButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.CharacterSheetMajorSkills);
-
-            // Minor skills button
-            Button minorSkillsButton = DaggerfallUI.AddButton(new Rect(11, 126, 115, 8), NativePanel);
-            minorSkillsButton.OnMouseClick += MinorSkillsButton_OnMouseClick;
-            minorSkillsButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.CharacterSheetMinorSkills);
-
-            // Miscellaneous skills button
-            Button miscSkillsButton = DaggerfallUI.AddButton(new Rect(11, 136, 115, 8), NativePanel);
-            miscSkillsButton.OnMouseClick += MiscSkillsButton_OnMouseClick;
-            miscSkillsButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.CharacterSheetMiscSkills);
-        }
-
-        private void PrimarySkillsButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
-        {
-            ShowSkillsDialog(PlayerEntity.GetPrimarySkills());
-        }
-
-        private void MajorSkillsButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
-        {
-            ShowSkillsDialog(PlayerEntity.GetMajorSkills());
-        }
-
-        private void MinorSkillsButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
-        {
-            ShowSkillsDialog(PlayerEntity.GetMinorSkills());
-        }
-
-        private void MiscSkillsButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
-        {
-            ShowSkillsDialog(PlayerEntity.GetMiscSkills(), true);
-        }
 
         public int CurrentTallyCount(DFCareer.Skills skill)
         {
@@ -107,124 +46,405 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             return usesNeededForAdvancement;
         }
 
+        public string GetBracketLeftType()
+        {
+            if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 0) { return ""; } // None
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 1) { return "<"; } // <>
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 2) { return "["; } // []
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 3) { return "("; } // ()
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 4) { return "+"; } // ++
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 5) { return "*"; } // **
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 6) { return "="; } // ==
+            else { return ""; }
+        }
+
+        public string GetBracketRightType()
+        {
+            if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 0) { return ""; } // None
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 1) { return ">"; } // <>
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 2) { return "]"; } // []
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 3) { return ")"; } // ()
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 4) { return "+"; } // ++
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 5) { return "*"; } // **
+            else if (ViewableSkillProgressMain.TextWithOrWithoutBrackets == 6) { return "="; } // ==
+            else { return ""; }
+        }
+
         // Creates formatting tokens for skill popups
         TextFile.Token[] CreateSkillTokens(DFCareer.Skills skill, bool twoColumn = false, int startPosition = 0)
         {
             bool highlight = playerEntity.GetSkillRecentlyIncreased(skill);
-            int currentTallyCount = CurrentTallyCount(skill);
-            int tallysNeededForAdvance = TallysNeededToAdvance(skill);
 
             List<TextFile.Token> tokens = new List<TextFile.Token>();
             TextFile.Formatting formatting = highlight ? TextFile.Formatting.TextHighlight : TextFile.Formatting.Text;
 
-            if (DaggerfallUnity.Settings.SDFFontRendering) // For when SDF Font Rendering is enabled (I.E. The smoother text for higher resolutions.)
+            TextFile.Token skillNameToken = new TextFile.Token();
+            skillNameToken.formatting = formatting;
+            skillNameToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(skill);
+
+            TextFile.Token skillValueToken = new TextFile.Token();
+            skillValueToken.formatting = formatting;
+            skillValueToken.text = string.Format("{0}", playerEntity.Skills.GetLiveSkillValue(skill));
+
+            DFCareer.Stats primaryStat = DaggerfallSkills.GetPrimaryStat(skill);
+            TextFile.Token skillPrimaryStatToken = new TextFile.Token();
+            skillPrimaryStatToken.formatting = formatting;
+            skillPrimaryStatToken.text = DaggerfallUnity.Instance.TextProvider.GetAbbreviatedStatName(primaryStat);
+
+            TextFile.Token positioningToken = new TextFile.Token();
+            positioningToken.formatting = TextFile.Formatting.PositionPrefix;
+
+            TextFile.Token tabToken = new TextFile.Token();
+            tabToken.formatting = TextFile.Formatting.PositionPrefix;
+
+            // Add tokens in order
+            if (!twoColumn)
             {
-                TextFile.Token skillNameToken = new TextFile.Token();
-                skillNameToken.formatting = formatting;
-                skillNameToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(skill);
+                tokens.Add(skillNameToken);
+                positioningToken.x = DaggerfallUnity.Settings.SDFFontRendering ?  65 + ViewableSkillProgressMain.ProgressBarWidth : 75 + ViewableSkillProgressMain.ProgressBarWidth;
+                tokens.Add(positioningToken);
+                tokens.Add(skillValueToken);
 
-                TextFile.Token skillTallyTrackerToken = new TextFile.Token();
-                skillTallyTrackerToken.formatting = formatting;
-                if (playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 100)
-                    skillTallyTrackerToken.text = "MASTERED";
-                else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 95)
-                    skillTallyTrackerToken.text = "Maxed";
-                else
-                    skillTallyTrackerToken.text = string.Format("{0} / {1}", currentTallyCount, tallysNeededForAdvance);
-
-                TextFile.Token skillValueToken = new TextFile.Token();
-                skillValueToken.formatting = formatting;
-                skillValueToken.text = string.Format("{0}%", playerEntity.Skills.GetLiveSkillValue(skill));
-
-                DFCareer.Stats primaryStat = DaggerfallSkills.GetPrimaryStat(skill);
-                TextFile.Token skillPrimaryStatToken = new TextFile.Token();
-                skillPrimaryStatToken.formatting = formatting;
-                skillPrimaryStatToken.text = DaggerfallUnity.Instance.TextProvider.GetAbbreviatedStatName(primaryStat);
-
-                TextFile.Token positioningToken = new TextFile.Token();
-                positioningToken.formatting = TextFile.Formatting.PositionPrefix;
-
-                TextFile.Token tabToken = new TextFile.Token();
-                tabToken.formatting = TextFile.Formatting.PositionPrefix;
-
-                // Add tokens in order
-                if (!twoColumn)
+                if (ViewableSkillProgressMain.GovernAttributeText)
                 {
-                    tokens.Add(skillNameToken);
-                    tokens.Add(tabToken);
-                    tokens.Add(tabToken);
-                    tokens.Add(skillTallyTrackerToken);
-                }
-                else // miscellaneous skills
-                {
-                    if (startPosition != 0) // if this is the second column
-                    {
-                        positioningToken.x = startPosition;
-                        tokens.Add(positioningToken);
-                    }
-                    tokens.Add(skillNameToken);
-                    positioningToken.x = startPosition + 55;
+                    positioningToken.x = DaggerfallUnity.Settings.SDFFontRendering ? startPosition + 78 + ViewableSkillProgressMain.ProgressBarWidth : startPosition + 92 + ViewableSkillProgressMain.ProgressBarWidth;
                     tokens.Add(positioningToken);
-                    tokens.Add(skillTallyTrackerToken);
+                    tokens.Add(skillPrimaryStatToken);
                 }
             }
-            else // For when the original Daggerfall font is being used (I.E. the less smooth looking "retro" font.)
+            else // miscellaneous skills
             {
-                TextFile.Token skillNameToken = new TextFile.Token();
-                skillNameToken.formatting = formatting;
-                skillNameToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(skill);
-
-                TextFile.Token skillTallyTrackerToken = new TextFile.Token();
-                skillTallyTrackerToken.formatting = formatting;
-                if (playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 100)
-                    skillTallyTrackerToken.text = "MASTERED";
-                else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue((int)skill) >= 95)
-                    skillTallyTrackerToken.text = "Maxed";
-                else
-                    skillTallyTrackerToken.text = string.Format("{0} / {1}", currentTallyCount, tallysNeededForAdvance);
-
-                TextFile.Token skillValueToken = new TextFile.Token();
-                skillValueToken.formatting = formatting;
-                skillValueToken.text = string.Format("{0}%", playerEntity.Skills.GetLiveSkillValue(skill));
-
-                DFCareer.Stats primaryStat = DaggerfallSkills.GetPrimaryStat(skill);
-                TextFile.Token skillPrimaryStatToken = new TextFile.Token();
-                skillPrimaryStatToken.formatting = formatting;
-                skillPrimaryStatToken.text = DaggerfallUnity.Instance.TextProvider.GetAbbreviatedStatName(primaryStat);
-
-                TextFile.Token positioningToken = new TextFile.Token();
-                positioningToken.formatting = TextFile.Formatting.PositionPrefix;
-
-                TextFile.Token tabToken = new TextFile.Token();
-                tabToken.formatting = TextFile.Formatting.PositionPrefix;
-
-                // Add tokens in order
-                if (!twoColumn)
+                if (startPosition != 0) // if this is the second column
                 {
-                    tokens.Add(skillNameToken);
-                    tokens.Add(tabToken);
-                    tokens.Add(tabToken);
-                    tokens.Add(tabToken);
-                    tokens.Add(skillTallyTrackerToken);
-                }
-                else // miscellaneous skills
-                {
-                    if (startPosition != 0) // if this is the second column
-                    {
-                        positioningToken.x = startPosition;
-                        tokens.Add(positioningToken);
-                    }
-                    tokens.Add(skillNameToken);
-                    positioningToken.x = startPosition + 90;
+                    positioningToken.x = startPosition;
                     tokens.Add(positioningToken);
-                    tokens.Add(skillTallyTrackerToken);
+                }
+                tokens.Add(skillNameToken);
+                positioningToken.x = startPosition + 50; // was 50
+                tokens.Add(positioningToken);
+                positioningToken.x = DaggerfallUnity.Settings.SDFFontRendering ? startPosition + 70 + ViewableSkillProgressMain.ProgressBarWidth : startPosition + 80 + ViewableSkillProgressMain.ProgressBarWidth; // was 85
+                tokens.Add(positioningToken);
+                tokens.Add(skillValueToken);
+
+                if (ViewableSkillProgressMain.GovernAttributeText)
+                {
+                    positioningToken.x = DaggerfallUnity.Settings.SDFFontRendering ? startPosition + 83 + ViewableSkillProgressMain.ProgressBarWidth : startPosition + 97 + ViewableSkillProgressMain.ProgressBarWidth;
+                    tokens.Add(positioningToken);
+                    tokens.Add(skillPrimaryStatToken);
                 }
             }
 
             return tokens.ToArray();
         }
 
-        void ShowSkillsDialog(List<DFCareer.Skills> skills, bool twoColumn = false)
+        protected override void ShowSkillsDialog(List<DFCareer.Skills> skills, bool twoColumn = false)
+        {
+            string brL = GetBracketLeftType();
+            string brR = GetBracketRightType(); // Just used for if user has the "TextBrackets" option enabled and set to something, otherwise returns empty string.
+            int miscSpaceModifier = DaggerfallUnity.Settings.SDFFontRendering ? 100 : 123;
+            bool secondColumn = false;
+            bool showHandToHandDamage = false;
+            List<TextFile.Token> tokens = new List<TextFile.Token>();
+            for (int i = 0; i < skills.Count; i++)
+            {
+                if (!showHandToHandDamage && (skills[i] == DFCareer.Skills.HandToHand))
+                    showHandToHandDamage = true;
+
+                if (!twoColumn)
+                {
+                    tokens.AddRange(CreateSkillTokens(skills[i]));
+                    if (i < skills.Count - 1)
+                        tokens.Add(TextFile.NewLineToken);
+                }
+                else
+                {
+                    if (!secondColumn)
+                    {
+                        tokens.AddRange(CreateSkillTokens(skills[i], true));
+                        secondColumn = !secondColumn;
+                    }
+                    else
+                    {
+                        tokens.AddRange(CreateSkillTokens(skills[i], true, miscSpaceModifier + ViewableSkillProgressMain.ProgressBarWidth));
+                        secondColumn = !secondColumn;
+                        if (i < skills.Count - 1)
+                            tokens.Add(TextFile.NewLineToken);
+                    }
+                }
+            }
+
+            secondColumn = false;
+
+            if (showHandToHandDamage)
+            {
+                tokens.Add(TextFile.NewLineToken);
+                TextFile.Token HandToHandDamageToken = new TextFile.Token();
+                int minDamage = FormulaHelper.CalculateHandToHandMinDamage(playerEntity.Skills.GetLiveSkillValue(DFCareer.Skills.HandToHand));
+                int maxDamage = FormulaHelper.CalculateHandToHandMaxDamage(playerEntity.Skills.GetLiveSkillValue(DFCareer.Skills.HandToHand));
+                HandToHandDamageToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(DFCareer.Skills.HandToHand) + " dmg: " + minDamage + "-" + maxDamage;
+                HandToHandDamageToken.formatting = TextFile.Formatting.Text;
+                tokens.Add(HandToHandDamageToken);
+            }
+
+            DaggerfallMessageBox messageBox = new DaggerfallMessageBox(uiManager, this);
+            messageBox.SetHighlightColor(DaggerfallUI.DaggerfallUnityStatIncreasedTextColor);
+            messageBox.SetTextTokens(tokens.ToArray(), null, false);
+            messageBox.ClickAnywhereToClose = true;
+            messageBox.Show();
+
+
+            messageBox.ImagePanel.VerticalAlignment = VerticalAlignment.None;
+            messageBox.ImagePanel.HorizontalAlignment = HorizontalAlignment.None;
+            messageBox.ImagePanel.Position = new Vector2(0, 0);
+
+
+            for (int i = 0; i < skills.Count; i++)
+            {
+                float cT = CurrentTallyCount(skills[i]);
+                float aT = TallysNeededToAdvance(skills[i]);
+                float sT = cT; // Just here to make the "For Nerds" text display option cleaner to implement in this code.
+                if (cT > aT)
+                    cT = aT; // Continue work on this tomorrow, get the non-SDF stuff to work and then should be all good, if I don't plan to do the other feature as well at least.
+
+                if (!twoColumn)
+                {
+                    int xPanModifier = DaggerfallUnity.Settings.SDFFontRendering ? -5 : 13;
+
+                    Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier, (ViewableSkillProgressMain.ProgressBarPosY + i * 7) - 8, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 50
+
+                    if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 2) // Only show progress bar when "DisplayType" is 0 or 2
+                    {
+                        Panel bar = DaggerfallUI.AddPanel(new Rect(1, 0, ViewableSkillProgressMain.ProgressBarWidth, 5), pan);
+
+                        if (playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 100)
+                            bar.BackgroundColor = ViewableSkillProgressMain.MasteredBarColor; // black by default
+                        else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 95)
+                            bar.BackgroundColor = ViewableSkillProgressMain.MaxedBarColor; // dark blue by default
+                        else if (cT >= aT)
+                            bar.BackgroundColor = ViewableSkillProgressMain.ReadyToLevelBarColor; // dark green by default
+                        else
+                        {
+                            bar = DaggerfallUI.AddPanel(new Rect(1, 0, (int)Mathf.Floor((cT / aT) * ViewableSkillProgressMain.ProgressBarWidth), 5), pan);
+                            bar.BackgroundColor = ViewableSkillProgressMain.ProgressBarColor; // dark red by default
+                        }
+
+                        Outline panBorder = DaggerfallUI.AddOutline(new Rect(0, 0, ViewableSkillProgressMain.ProgressBarWidth, 5), ViewableSkillProgressMain.ProgressBarOutlineColor, pan); // yellow by default
+                    }
+
+                    if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 1) // Only show progress text when "DisplayType" is 0 or 1
+                    {
+                        TextLabel progText = DaggerfallUI.AddTextLabel(DaggerfallUI.DefaultFont, new Vector2(0, 1), string.Empty, pan);
+                        progText.HorizontalAlignment = HorizontalAlignment.Center;
+                        progText.TextScale = ViewableSkillProgressMain.ProgressTextScale;
+                        progText.TextColor = ViewableSkillProgressMain.ProgressTextColor;
+
+                        if (playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 100 && ViewableSkillProgressMain.ProgressTextType != 2)
+                            progText.Text = brL + "MASTERED" + brR;
+                        else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 95 && ViewableSkillProgressMain.ProgressTextType != 2)
+                            progText.Text = brL + "MAXED" + brR;
+                        else if (cT >= aT && ViewableSkillProgressMain.ProgressTextType != 2)
+                            progText.Text = brL + "READY" + brR;
+                        else
+                        {
+                            if (ViewableSkillProgressMain.ProgressTextType == 0)
+                                progText.Text = string.Format(brL + "{0} / {1}" + brR, cT, aT);
+                            else if (ViewableSkillProgressMain.ProgressTextType == 1)
+                                progText.Text = string.Format(brL + "{0}" + brR, aT - cT);
+                            else
+                                progText.Text = string.Format(brL + "{0} / {1}" + brR, sT, aT);
+                        }
+                    }
+                }
+                else
+                {
+                    if (!secondColumn)
+                    {
+                        int xPanModifier = DaggerfallUnity.Settings.SDFFontRendering ? 0 : 15;
+
+                        Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier, ViewableSkillProgressMain.ProgressBarPosY + i * 3.5f, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 50
+
+                        if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 2) // Only show progress bar when "DisplayType" is 0 or 2
+                        {
+                            Panel bar = DaggerfallUI.AddPanel(new Rect(1, 0, ViewableSkillProgressMain.ProgressBarWidth, 5), pan);
+
+                            if (playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 100)
+                                bar.BackgroundColor = ViewableSkillProgressMain.MasteredBarColor; // black by default
+                            else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 95)
+                                bar.BackgroundColor = ViewableSkillProgressMain.MaxedBarColor; // dark blue by default
+                            else if (cT >= aT)
+                                bar.BackgroundColor = ViewableSkillProgressMain.ReadyToLevelBarColor; // dark green by default
+                            else
+                            {
+                                bar = DaggerfallUI.AddPanel(new Rect(1, 0, (int)Mathf.Floor((cT / aT) * ViewableSkillProgressMain.ProgressBarWidth), 5), pan);
+                                bar.BackgroundColor = ViewableSkillProgressMain.ProgressBarColor; // dark red by default
+                            }
+
+                            Outline panBorder = DaggerfallUI.AddOutline(new Rect(0, 0, ViewableSkillProgressMain.ProgressBarWidth, 5), ViewableSkillProgressMain.ProgressBarOutlineColor, pan); // yellow by default
+                        }
+
+                        if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 1) // Only show progress text when "DisplayType" is 0 or 1
+                        {
+                            TextLabel progText = DaggerfallUI.AddTextLabel(DaggerfallUI.DefaultFont, new Vector2(0, 1), string.Empty, pan);
+                            progText.HorizontalAlignment = HorizontalAlignment.Center;
+                            progText.TextScale = ViewableSkillProgressMain.ProgressTextScale;
+                            progText.TextColor = ViewableSkillProgressMain.ProgressTextColor;
+
+                            if (playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 100 && ViewableSkillProgressMain.ProgressTextType != 2)
+                                progText.Text = brL + "MASTERED" + brR;
+                            else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 95 && ViewableSkillProgressMain.ProgressTextType != 2)
+                                progText.Text = brL + "MAXED" + brR;
+                            else if (cT >= aT && ViewableSkillProgressMain.ProgressTextType != 2)
+                                progText.Text = brL + "READY" + brR;
+                            else
+                            {
+                                if (ViewableSkillProgressMain.ProgressTextType == 0)
+                                    progText.Text = string.Format(brL + "{0} / {1}" + brR, cT, aT);
+                                else if (ViewableSkillProgressMain.ProgressTextType == 1)
+                                    progText.Text = string.Format(brL + "{0}" + brR, aT - cT);
+                                else
+                                    progText.Text = string.Format(brL + "{0} / {1}" + brR, sT, aT);
+                            }
+                        }
+
+                        secondColumn = !secondColumn;
+                    }
+                    else
+                    {
+                        int xPanModifier = DaggerfallUnity.Settings.SDFFontRendering ? 100 : 138;
+
+                        Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier + ViewableSkillProgressMain.ProgressBarWidth, (ViewableSkillProgressMain.ProgressBarPosY + i * 3.5f) - 3, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 190
+
+                        if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 2) // Only show progress bar when "DisplayType" is 0 or 2
+                        {
+                            Panel bar = DaggerfallUI.AddPanel(new Rect(1, 0, ViewableSkillProgressMain.ProgressBarWidth, 5), pan);
+
+                            if (playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 100)
+                                bar.BackgroundColor = ViewableSkillProgressMain.MasteredBarColor; // black by default
+                            else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 95)
+                                bar.BackgroundColor = ViewableSkillProgressMain.MaxedBarColor; // dark blue by default
+                            else if (cT >= aT)
+                                bar.BackgroundColor = ViewableSkillProgressMain.ReadyToLevelBarColor; // dark green by default
+                            else
+                            {
+                                bar = DaggerfallUI.AddPanel(new Rect(1, 0, (int)Mathf.Floor((cT / aT) * ViewableSkillProgressMain.ProgressBarWidth), 5), pan);
+                                bar.BackgroundColor = ViewableSkillProgressMain.ProgressBarColor; // dark red by default
+                            }
+
+                            Outline panBorder = DaggerfallUI.AddOutline(new Rect(0, 0, ViewableSkillProgressMain.ProgressBarWidth, 5), ViewableSkillProgressMain.ProgressBarOutlineColor, pan); // yellow by default
+                        }
+
+                        if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 1) // Only show progress text when "DisplayType" is 0 or 1
+                        {
+                            TextLabel progText = DaggerfallUI.AddTextLabel(DaggerfallUI.DefaultFont, new Vector2(0, 1), string.Empty, pan);
+                            progText.HorizontalAlignment = HorizontalAlignment.Center;
+                            progText.TextScale = ViewableSkillProgressMain.ProgressTextScale;
+                            progText.TextColor = ViewableSkillProgressMain.ProgressTextColor;
+
+                            if (playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 100 && ViewableSkillProgressMain.ProgressTextType != 2)
+                                progText.Text = brL + "MASTERED" + brR;
+                            else if (playerEntity.AlreadyMasteredASkill() && playerEntity.Skills.GetPermanentSkillValue(skills[i]) >= 95 && ViewableSkillProgressMain.ProgressTextType != 2)
+                                progText.Text = brL + "MAXED" + brR;
+                            else if (cT >= aT && ViewableSkillProgressMain.ProgressTextType != 2)
+                                progText.Text = brL + "READY" + brR;
+                            else
+                            {
+                                if (ViewableSkillProgressMain.ProgressTextType == 0)
+                                    progText.Text = string.Format(brL + "{0} / {1}" + brR, cT, aT);
+                                else if (ViewableSkillProgressMain.ProgressTextType == 1)
+                                    progText.Text = string.Format(brL + "{0}" + brR, aT - cT);
+                                else
+                                    progText.Text = string.Format(brL + "{0} / {1}" + brR, sT, aT);
+                            }
+                        }
+
+                        secondColumn = !secondColumn;
+                    }
+                }
+            }
+        }
+
+        /*protected override void ShowSkillsDialog(List<DFCareer.Skills> skills, bool twoColumn = false)
+        {
+            bool secondColumn = false;
+            bool showHandToHandDamage = false;
+            List<TextFile.Token> tokens = new List<TextFile.Token>();
+            for (int i = 0; i < skills.Count; i++)
+            {
+                if (!showHandToHandDamage && (skills[i] == DFCareer.Skills.HandToHand))
+                    showHandToHandDamage = true;
+
+                if (!twoColumn)
+                {
+                    tokens.AddRange(CreateSkillTokens(skills[i]));
+                    if (i < skills.Count - 1)
+                        tokens.Add(TextFile.NewLineToken);
+                }
+                else
+                {
+                    if (!secondColumn)
+                    {
+                        tokens.AddRange(CreateSkillTokens(skills[i], true));
+                        secondColumn = !secondColumn;
+                    }
+                    else
+                    {
+                        tokens.AddRange(CreateSkillTokens(skills[i], true, 136));
+                        secondColumn = !secondColumn;
+                        if (i < skills.Count - 1)
+                            tokens.Add(TextFile.NewLineToken);
+                    }
+                }
+            }
+
+            if (showHandToHandDamage)
+            {
+                tokens.Add(TextFile.NewLineToken);
+                TextFile.Token HandToHandDamageToken = new TextFile.Token();
+                int minDamage = FormulaHelper.CalculateHandToHandMinDamage(playerEntity.Skills.GetLiveSkillValue(DFCareer.Skills.HandToHand));
+                int maxDamage = FormulaHelper.CalculateHandToHandMaxDamage(playerEntity.Skills.GetLiveSkillValue(DFCareer.Skills.HandToHand));
+                HandToHandDamageToken.text = DaggerfallUnity.Instance.TextProvider.GetSkillName(DFCareer.Skills.HandToHand) + " dmg: " + minDamage + "-" + maxDamage;
+                HandToHandDamageToken.formatting = TextFile.Formatting.Text;
+                tokens.Add(HandToHandDamageToken);
+            }
+
+            DaggerfallMessageBox messageBox = new DaggerfallMessageBox(uiManager, this);
+            messageBox.SetHighlightColor(DaggerfallUI.DaggerfallUnityStatIncreasedTextColor);
+            messageBox.SetTextTokens(tokens.ToArray(), null, false);
+            messageBox.ClickAnywhereToClose = true;
+            messageBox.Show();
+
+
+            messageBox.ImagePanel.VerticalAlignment = VerticalAlignment.None;
+            messageBox.ImagePanel.HorizontalAlignment = HorizontalAlignment.None;
+            messageBox.ImagePanel.Position = new Vector2(0, 0);
+
+
+            int repeatLimit = 12;
+            if (twoColumn) { repeatLimit = 23; }
+            for (int i = 0; i < repeatLimit; i++)
+            {
+                if (i < 12) // For first column
+                {
+                    Panel pan = DaggerfallUI.AddPanel(new Rect(50, 10 + i * 7, 30, 5), messageBox.ImagePanel);
+
+                    Panel bar = DaggerfallUI.AddPanel(new Rect(1, 0, 15, 5), pan);
+                    bar.BackgroundColor = new Color(0.6f, 0, 0); //dark red
+
+                    Outline panBorder = DaggerfallUI.AddOutline(new Rect(0, 0, 30, 5), Color.yellow, pan);
+                }
+                else // For second column
+                {
+                    Panel pan = DaggerfallUI.AddPanel(new Rect(190, 10 + (i - 12) * 7, 30, 5), messageBox.ImagePanel);
+
+                    Panel bar = DaggerfallUI.AddPanel(new Rect(1, 0, 15, 5), pan);
+                    bar.BackgroundColor = new Color(0.6f, 0, 0); //dark red
+
+                    Outline panBorder = DaggerfallUI.AddOutline(new Rect(0, 0, 30, 5), Color.yellow, pan);
+                }
+            }
+        }*/
+
+        /*protected override void ShowSkillsDialog(List<DFCareer.Skills> skills, bool twoColumn = false)
         {
             bool secondColumn = false;
             bool showHandToHandDamage = false;
@@ -277,6 +497,6 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             messageBox.SetTextTokens(tokens.ToArray(), null, false);
             messageBox.ClickAnywhereToClose = true;
             messageBox.Show();
-        }
+        }*/
     }
 }
