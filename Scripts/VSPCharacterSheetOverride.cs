@@ -25,23 +25,23 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         #endregion
 
-        public int CurrentTallyCount(DFCareer.Skills skill)
+        public static int CurrentTallyCount(DFCareer.Skills skill)
         {
             int i = (int)skill;
 
-            int reflexesMod = 0x10000 - (((int)playerEntity.Reflexes - 2) << 13);
-            int calculatedSkillUses = (playerEntity.SkillUses[i] * reflexesMod) >> 16;
+            int reflexesMod = 0x10000 - (((int)GameManager.Instance.PlayerEntity.Reflexes - 2) << 13);
+            int calculatedSkillUses = (GameManager.Instance.PlayerEntity.SkillUses[i] * reflexesMod) >> 16;
 
             return calculatedSkillUses;
         }
 
-        public int TallysNeededToAdvance(DFCareer.Skills skill)
+        public static int TallysNeededToAdvance(DFCareer.Skills skill)
         {
             int i = (int)skill;
 
             int skillAdvancementMultiplier = DaggerfallSkills.GetAdvancementMultiplier((DFCareer.Skills)i);
-            float careerAdvancementMultiplier = playerEntity.Career.AdvancementMultiplier;
-            int usesNeededForAdvancement = FormulaHelper.CalculateSkillUsesForAdvancement(playerEntity.Skills.GetPermanentSkillValue(i), skillAdvancementMultiplier, careerAdvancementMultiplier, playerEntity.Level);
+            float careerAdvancementMultiplier = GameManager.Instance.PlayerEntity.Career.AdvancementMultiplier;
+            int usesNeededForAdvancement = FormulaHelper.CalculateSkillUsesForAdvancement(GameManager.Instance.PlayerEntity.Skills.GetPermanentSkillValue(i), skillAdvancementMultiplier, careerAdvancementMultiplier, GameManager.Instance.PlayerEntity.Level);
 
             return usesNeededForAdvancement;
         }
@@ -204,7 +204,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 float aT = TallysNeededToAdvance(skills[i]);
                 float sT = cT; // Just here to make the "For Nerds" text display option cleaner to implement in this code.
                 if (cT > aT)
-                    cT = aT; // Continue work on this tomorrow, get the non-SDF stuff to work and then should be all good, if I don't plan to do the other feature as well at least.
+                    cT = aT;
 
                 if (!twoColumn)
                 {
