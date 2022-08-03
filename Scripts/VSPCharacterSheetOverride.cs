@@ -209,8 +209,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 if (!twoColumn)
                 {
                     int xPanModifier = DaggerfallUnity.Settings.SDFFontRendering ? -5 : 13;
+                    int yPanModifier = showHandToHandDamage ? 7 : 0;
 
-                    Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier, (ViewableSkillProgressMain.ProgressBarPosY + i * 7) - 8, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 50
+                    Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier, (ViewableSkillProgressMain.ProgressBarPosY + yPanModifier + i * 7) - 8, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 50
 
                     if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 2) // Only show progress bar when "DisplayType" is 0 or 2
                     {
@@ -260,8 +261,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     if (!secondColumn)
                     {
                         int xPanModifier = DaggerfallUnity.Settings.SDFFontRendering ? 0 : 15;
+                        float yPanModifier = showHandToHandDamage ? 0f : -7.0f;
 
-                        Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier, ViewableSkillProgressMain.ProgressBarPosY + i * 3.5f, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 50
+                        Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier, ViewableSkillProgressMain.ProgressBarPosY + yPanModifier + i * 3.5f, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 50
 
                         if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 2) // Only show progress bar when "DisplayType" is 0 or 2
                         {
@@ -311,8 +313,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     else
                     {
                         int xPanModifier = DaggerfallUnity.Settings.SDFFontRendering ? 100 : 138;
+                        float yPanModifier = showHandToHandDamage ? 0f : -7.0f;
 
-                        Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier + ViewableSkillProgressMain.ProgressBarWidth, (ViewableSkillProgressMain.ProgressBarPosY + i * 3.5f) - 3, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 190
+                        Panel pan = DaggerfallUI.AddPanel(new Rect(ViewableSkillProgressMain.ProgressBarPosX + xPanModifier + ViewableSkillProgressMain.ProgressBarWidth, (ViewableSkillProgressMain.ProgressBarPosY + yPanModifier + i * 3.5f) - 3, ViewableSkillProgressMain.ProgressBarWidth, 5), messageBox.ImagePanel); // 190
 
                         if (ViewableSkillProgressMain.ProgressDisplayType == 0 || ViewableSkillProgressMain.ProgressDisplayType == 2) // Only show progress bar when "DisplayType" is 0 or 2
                         {

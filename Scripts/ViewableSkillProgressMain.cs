@@ -2,11 +2,11 @@
 // Copyright:       Copyright (C) 2022 Kirk.O
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Author:          Kirk.O
-// Version:			v.1.20
+// Version:			v.1.21
 // Created On: 	    3/20/2022, 12:00 PM
-// Last Edit:		7/30/2022, 9:45 PM
+// Last Edit:		8/2/2022, 8:10 PM
 // Modifier:
-// Special Thanks:  Alphaus, Kab the Bird Ranger, Hazelnut, BadLuckBurt, DunnyOfPenwick, Sordid, Thevm, Nkrisztian89
+// Special Thanks:  Alphaus, Kab the Bird Ranger, Hazelnut, BadLuckBurt, DunnyOfPenwick, Sordid, Evildari, Thevm, Nkrisztian89
 
 using DaggerfallConnect;
 using DaggerfallWorkshop;
